@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: fintech-transfers-saga
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/transfers}
+    username: ${DB_USERNAME:transfers}
+    password: ${DB_PASSWORD:transfers}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Production: point at the bank's identity provider (Keycloak, Okta, Cognito, ...)
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/bank}
+  mvc:
+    problemdetails:
+      enabled: true
+
+transfers:
+  kafka:
+    topic: transfers.events
+    partitions: 3
+  outbox:
+    poll-interval-ms: 500
+  saga:
+    recovery:
+      stuck-after: PT30S
+      interval-ms: 15000
+  risk:
+    elevated-amount: 2000
+    elevated-amount-score: 25
+    high-amount: 10000
+    high-amount-score: 60
+    velocity-window: 10m
+    velocity-max-transfers: 5
+    velocity-score: 40
+    new-beneficiary-score: 15
+    reject-threshold: 70
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

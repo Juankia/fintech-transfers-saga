@@ -1,0 +1,7 @@
+# Local development: demo accounts + in-process JWT issuer (POST /dev/tokens).
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+logging:
+  level:
+    io.github.juankia.transfers: DEBUG
